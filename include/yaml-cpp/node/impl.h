@@ -51,7 +51,7 @@ inline Node::~Node() {}
 
 inline void Node::EnsureNodeExists() const {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   if (!m_pNode) {
     m_pMemory.reset(new detail::memory_holder);
     m_pNode = &m_pMemory->create_node();
@@ -68,14 +68,14 @@ inline bool Node::IsDefined() const {
 
 inline Mark Node::Mark() const {
   if (!m_isValid) {
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   }
   return m_pNode ? m_pNode->mark() : Mark::null_mark();
 }
 
 inline NodeType::value Node::Type() const {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   return m_pNode ? m_pNode->type() : NodeType::Null;
 }
 
@@ -117,12 +117,12 @@ struct as_if<T, void> {
 
   T operator()() const {
     if (!node.m_pNode)
-      throw TypedBadConversion<T>(node.Mark());
+      YAML_THROW(TypedBadConversion<T>(node.Mark()));
 
     T t;
     if (convert<T>::decode(node, t))
       return t;
-    throw TypedBadConversion<T>(node.Mark());
+    YAML_THROW(TypedBadConversion<T>(node.Mark()));
   }
 };
 
@@ -133,7 +133,7 @@ struct as_if<std::string, void> {
 
   std::string operator()() const {
     if (node.Type() != NodeType::Scalar)
-      throw TypedBadConversion<std::string>(node.Mark());
+      YAML_THROW(TypedBadConversion<std::string>(node.Mark()));
     return node.Scalar();
   }
 };
@@ -142,7 +142,7 @@ struct as_if<std::string, void> {
 template <typename T>
 inline T Node::as() const {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   return as_if<T, void>(*this)();
 }
 
@@ -155,32 +155,32 @@ inline T Node::as(const S& fallback) const {
 
 inline const std::string& Node::Scalar() const {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   return m_pNode ? m_pNode->scalar() : detail::node_data::empty_scalar;
 }
 
 inline const std::string& Node::Tag() const {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   return m_pNode ? m_pNode->tag() : detail::node_data::empty_scalar;
 }
 
 inline void Node::SetTag(const std::string& tag) {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   m_pNode->set_tag(tag);
 }
 
 inline EmitterStyle::value Node::Style() const {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   return m_pNode ? m_pNode->style() : EmitterStyle::Default;
 }
 
 inline void Node::SetStyle(EmitterStyle::value style) {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   m_pNode->set_style(style);
 }
@@ -188,7 +188,7 @@ inline void Node::SetStyle(EmitterStyle::value style) {
 // assignment
 inline bool Node::is(const Node& rhs) const {
   if (!m_isValid || !rhs.m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   if (!m_pNode || !rhs.m_pNode)
     return false;
   return m_pNode->is(*rhs.m_pNode);
@@ -197,14 +197,14 @@ inline bool Node::is(const Node& rhs) const {
 template <typename T>
 inline Node& Node::operator=(const T& rhs) {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   Assign(rhs);
   return *this;
 }
 
 inline void Node::reset(const YAML::Node& rhs) {
   if (!m_isValid || !rhs.m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   m_pMemory = rhs.m_pMemory;
   m_pNode = rhs.m_pNode;
 }
@@ -212,35 +212,35 @@ inline void Node::reset(const YAML::Node& rhs) {
 template <typename T>
 inline void Node::Assign(const T& rhs) {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   AssignData(convert<T>::encode(rhs));
 }
 
 template <>
 inline void Node::Assign(const std::string& rhs) {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   m_pNode->set_scalar(rhs);
 }
 
 inline void Node::Assign(const char* rhs) {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   m_pNode->set_scalar(rhs);
 }
 
 inline void Node::Assign(char* rhs) {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   m_pNode->set_scalar(rhs);
 }
 
 inline Node& Node::operator=(const Node& rhs) {
   if (!m_isValid || !rhs.m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   if (is(rhs))
     return *this;
   AssignNode(rhs);
@@ -249,7 +249,7 @@ inline Node& Node::operator=(const Node& rhs) {
 
 inline void Node::AssignData(const Node& rhs) {
   if (!m_isValid || !rhs.m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   rhs.EnsureNodeExists();
 
@@ -259,7 +259,7 @@ inline void Node::AssignData(const Node& rhs) {
 
 inline void Node::AssignNode(const Node& rhs) {
   if (!m_isValid || !rhs.m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   rhs.EnsureNodeExists();
 
   if (!m_pNode) {
@@ -276,7 +276,7 @@ inline void Node::AssignNode(const Node& rhs) {
 // size/iterator
 inline std::size_t Node::size() const {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   return m_pNode ? m_pNode->size() : 0;
 }
 
@@ -309,13 +309,13 @@ inline iterator Node::end() {
 template <typename T>
 inline void Node::push_back(const T& rhs) {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   push_back(Node(rhs));
 }
 
 inline void Node::push_back(const Node& rhs) {
   if (!m_isValid || !rhs.m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   rhs.EnsureNodeExists();
 
@@ -372,7 +372,7 @@ inline typename to_value_t<T>::return_type to_value(const T& t) {
 template <typename Key>
 inline const Node Node::operator[](const Key& key) const {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   detail::node* value = static_cast<const detail::node&>(*m_pNode)
                             .get(detail::to_value(key), m_pMemory);
@@ -385,7 +385,7 @@ inline const Node Node::operator[](const Key& key) const {
 template <typename Key>
 inline Node Node::operator[](const Key& key) {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   detail::node& value = m_pNode->get(detail::to_value(key), m_pMemory);
   return Node(value, m_pMemory);
@@ -394,14 +394,14 @@ inline Node Node::operator[](const Key& key) {
 template <typename Key>
 inline bool Node::remove(const Key& key) {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   return m_pNode->remove(detail::to_value(key), m_pMemory);
 }
 
 inline const Node Node::operator[](const Node& key) const {
   if (!m_isValid || !key.m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   key.EnsureNodeExists();
   m_pMemory->merge(*key.m_pMemory);
@@ -415,7 +415,7 @@ inline const Node Node::operator[](const Node& key) const {
 
 inline Node Node::operator[](const Node& key) {
   if (!m_isValid || !key.m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   key.EnsureNodeExists();
   m_pMemory->merge(*key.m_pMemory);
@@ -425,7 +425,7 @@ inline Node Node::operator[](const Node& key) {
 
 inline bool Node::remove(const Node& key) {
   if (!m_isValid || !key.m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   key.EnsureNodeExists();
   return m_pNode->remove(*key.m_pNode, m_pMemory);
@@ -435,7 +435,7 @@ inline bool Node::remove(const Node& key) {
 template <typename Key, typename Value>
 inline void Node::force_insert(const Key& key, const Value& value) {
   if (!m_isValid)
-    throw InvalidNode();
+    YAML_THROW(InvalidNode());
   EnsureNodeExists();
   m_pNode->force_insert(detail::to_value(key), detail::to_value(value),
                         m_pMemory);

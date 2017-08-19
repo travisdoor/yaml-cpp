@@ -154,11 +154,11 @@ void SingleDocParser::HandleBlockSequence(EventHandler& eventHandler) {
 
   while (1) {
     if (m_scanner.empty())
-      throw ParserException(m_scanner.mark(), ErrorMsg::END_OF_SEQ);
+      YAML_THROW(ParserException(m_scanner.mark(), ErrorMsg::END_OF_SEQ));
 
     Token token = m_scanner.peek();
     if (token.type != Token::BLOCK_ENTRY && token.type != Token::BLOCK_SEQ_END)
-      throw ParserException(token.mark, ErrorMsg::END_OF_SEQ);
+      YAML_THROW(ParserException(token.mark, ErrorMsg::END_OF_SEQ));
 
     m_scanner.pop();
     if (token.type == Token::BLOCK_SEQ_END)
@@ -187,7 +187,7 @@ void SingleDocParser::HandleFlowSequence(EventHandler& eventHandler) {
 
   while (1) {
     if (m_scanner.empty())
-      throw ParserException(m_scanner.mark(), ErrorMsg::END_OF_SEQ_FLOW);
+      YAML_THROW(ParserException(m_scanner.mark(), ErrorMsg::END_OF_SEQ_FLOW));
 
     // first check for end
     if (m_scanner.peek().type == Token::FLOW_SEQ_END) {
@@ -199,7 +199,7 @@ void SingleDocParser::HandleFlowSequence(EventHandler& eventHandler) {
     HandleNode(eventHandler);
 
     if (m_scanner.empty())
-      throw ParserException(m_scanner.mark(), ErrorMsg::END_OF_SEQ_FLOW);
+      YAML_THROW(ParserException(m_scanner.mark(), ErrorMsg::END_OF_SEQ_FLOW));
 
     // now eat the separator (or could be a sequence end, which we ignore - but
     // if it's neither, then it's a bad node)
@@ -207,7 +207,7 @@ void SingleDocParser::HandleFlowSequence(EventHandler& eventHandler) {
     if (token.type == Token::FLOW_ENTRY)
       m_scanner.pop();
     else if (token.type != Token::FLOW_SEQ_END)
-      throw ParserException(token.mark, ErrorMsg::END_OF_SEQ_FLOW);
+      YAML_THROW(ParserException(token.mark, ErrorMsg::END_OF_SEQ_FLOW));
   }
 
   m_pCollectionStack->PopCollectionType(CollectionType::FlowSeq);
@@ -240,12 +240,12 @@ void SingleDocParser::HandleBlockMap(EventHandler& eventHandler) {
 
   while (1) {
     if (m_scanner.empty())
-      throw ParserException(m_scanner.mark(), ErrorMsg::END_OF_MAP);
+      YAML_THROW(ParserException(m_scanner.mark(), ErrorMsg::END_OF_MAP));
 
     Token token = m_scanner.peek();
     if (token.type != Token::KEY && token.type != Token::VALUE &&
         token.type != Token::BLOCK_MAP_END)
-      throw ParserException(token.mark, ErrorMsg::END_OF_MAP);
+      YAML_THROW(ParserException(token.mark, ErrorMsg::END_OF_MAP));
 
     if (token.type == Token::BLOCK_MAP_END) {
       m_scanner.pop();
@@ -279,7 +279,7 @@ void SingleDocParser::HandleFlowMap(EventHandler& eventHandler) {
 
   while (1) {
     if (m_scanner.empty())
-      throw ParserException(m_scanner.mark(), ErrorMsg::END_OF_MAP_FLOW);
+      YAML_THROW(ParserException(m_scanner.mark(), ErrorMsg::END_OF_MAP_FLOW));
 
     Token& token = m_scanner.peek();
     const Mark mark = token.mark;
@@ -306,7 +306,7 @@ void SingleDocParser::HandleFlowMap(EventHandler& eventHandler) {
     }
 
     if (m_scanner.empty())
-      throw ParserException(m_scanner.mark(), ErrorMsg::END_OF_MAP_FLOW);
+      YAML_THROW(ParserException(m_scanner.mark(), ErrorMsg::END_OF_MAP_FLOW));
 
     // now eat the separator (or could be a map end, which we ignore - but if
     // it's neither, then it's a bad node)
@@ -314,7 +314,7 @@ void SingleDocParser::HandleFlowMap(EventHandler& eventHandler) {
     if (nextToken.type == Token::FLOW_ENTRY)
       m_scanner.pop();
     else if (nextToken.type != Token::FLOW_MAP_END)
-      throw ParserException(nextToken.mark, ErrorMsg::END_OF_MAP_FLOW);
+      YAML_THROW(ParserException(nextToken.mark, ErrorMsg::END_OF_MAP_FLOW));
   }
 
   m_pCollectionStack->PopCollectionType(CollectionType::FlowMap);
@@ -380,7 +380,7 @@ void SingleDocParser::ParseProperties(std::string& tag, anchor_t& anchor) {
 void SingleDocParser::ParseTag(std::string& tag) {
   Token& token = m_scanner.peek();
   if (!tag.empty())
-    throw ParserException(token.mark, ErrorMsg::MULTIPLE_TAGS);
+    YAML_THROW(ParserException(token.mark, ErrorMsg::MULTIPLE_TAGS));
 
   Tag tagInfo(token);
   tag = tagInfo.Translate(m_directives);
@@ -390,7 +390,7 @@ void SingleDocParser::ParseTag(std::string& tag) {
 void SingleDocParser::ParseAnchor(anchor_t& anchor) {
   Token& token = m_scanner.peek();
   if (anchor)
-    throw ParserException(token.mark, ErrorMsg::MULTIPLE_ANCHORS);
+    YAML_THROW(ParserException(token.mark, ErrorMsg::MULTIPLE_ANCHORS));
 
   anchor = RegisterAnchor(token.value);
   m_scanner.pop();
@@ -407,7 +407,7 @@ anchor_t SingleDocParser::LookupAnchor(const Mark& mark,
                                        const std::string& name) const {
   Anchors::const_iterator it = m_anchors.find(name);
   if (it == m_anchors.end())
-    throw ParserException(mark, ErrorMsg::UNKNOWN_ANCHOR);
+    YAML_THROW(ParserException(mark, ErrorMsg::UNKNOWN_ANCHOR));
 
   return it->second;
 }

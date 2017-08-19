@@ -32,7 +32,7 @@ Node Load(std::istream& input) {
 Node LoadFile(const std::string& filename) {
   std::ifstream fin(filename.c_str());
   if (!fin) {
-    throw BadFile();
+    YAML_THROW(BadFile());
   }
   return Load(fin);
 }
@@ -65,7 +65,7 @@ std::vector<Node> LoadAll(std::istream& input) {
 std::vector<Node> LoadAllFromFile(const std::string& filename) {
   std::ifstream fin(filename.c_str());
   if (!fin) {
-    throw BadFile();
+    YAML_THROW(BadFile());
   }
   return LoadAll(fin);
 }

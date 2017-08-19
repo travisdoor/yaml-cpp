@@ -21,6 +21,43 @@
     #define YAML_CPP_NOEXCEPT noexcept
 #endif
 
+// Check compiler and set exception support
+#if defined(_MSC_VER)
+    #if _HAS_EXCEPTIONS
+        #define YAML_CPP_EXCEPTIONS 1
+    #else
+        #define YAML_CPP_EXCEPTIONS 0
+    #endif
+#elif defined(__GNUC__)
+    #if __cpp_exceptions
+        #define YAML_CPP_EXCEPTIONS 1
+    #else
+        #define YAML_CPP_EXCEPTIONS 0
+    #endif
+#else
+    #define YAML_CPP_EXCEPTIONS 1
+#endif
+
+// Disable exceptions and replace it with ThrowException method implemented
+// on client side.
+#if YAML_CPP_EXCEPTIONS
+#define YAML_TRY try
+#define YAML_CATCH(e) catch (e)
+#define YAML_THROW(e) throw e
+#else
+namespace YAML
+{
+void ThrowException(const std::exception &e);
+}
+#define YAML_TRY if (true)
+#define YAML_CATCH(e) if (false)
+#define YAML_THROW(e)  \
+  do {                 \
+    ThrowException(e); \
+    std::terminate();  \
+  } while (0)
+#endif
+
 namespace YAML {
 // error messages
 namespace ErrorMsg {

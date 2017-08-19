@@ -4,6 +4,7 @@
 #include "directives.h"  // IWYU pragma: keep
 #include "tag.h"
 #include "token.h"
+#include "yaml-cpp/exceptions.h"
 
 namespace YAML {
 Tag::Tag(const Token& token) : type(static_cast<TYPE>(token.data)) {
@@ -44,6 +45,6 @@ const std::string Tag::Translate(const Directives& directives) {
     default:
       assert(false);
   }
-  throw std::runtime_error("yaml-cpp: internal error, bad tag type");
+  YAML_THROW(std::runtime_error("yaml-cpp: internal error, bad tag type"));
 }
 }
